@@ -488,6 +488,11 @@ impl ModelSolving {
             })
         }
     }
+
+    /// Gets the dual solution of a linear constraint
+    pub fn dual_sol(&self, cons: Rc<Constraint>) -> f64 {
+        self.scip().dual_sol(cons)
+    }
 }
 
 impl Model<Solved> {
@@ -538,6 +543,9 @@ pub trait ModelWithProblem {
     /// Returns the number of constraints in the optimization model.
     fn n_conss(&mut self) -> usize;
 
+    /// Finds a constraint by name
+    fn find_cons(&mut self, name: &str) -> Option<Rc<Constraint>>;
+
     /// Returns a vector of all constraints in the optimization model.
     fn conss(&mut self) -> Vec<Rc<Constraint>>;
 
@@ -585,6 +593,13 @@ macro_rules! impl_ModelWithProblem {
             /// Returns the number of constraints in the optimization model.
             fn n_conss(&mut self) -> usize {
                 self.scip().n_conss()
+            }
+
+            fn find_cons(&mut self, name: &str) -> Option<Rc<Constraint>> {
+                self.scip().find_cons(name).map(|cons| Rc::new(Constraint {
+                    raw: cons,
+                    scip: self.scip().clone(),
+                }))
             }
 
             /// Returns a vector of all constraints in the optimization model.
